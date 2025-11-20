@@ -12,7 +12,6 @@ use thiserror::Error;
 // --- Structs to model the Telegram JSON export ---
 #[derive(Deserialize, Debug)]
 struct Export {
-    id: i64,
     name: String,
     messages: Vec<Message>,
 }
@@ -40,7 +39,7 @@ pub enum Error {
 }
 
 // The main function for the importer
-pub async fn run(pool: &PgPool, path: &Path) -> Result<(), Error> {
+pub async fn run(pool: &PgPool, path: &Path, chat_id: i64) -> Result<(), Error> {
     println!("▶️ Starting import from: {}", path.display());
 
     // --- 1. Parse the JSON file ---
@@ -51,12 +50,10 @@ pub async fn run(pool: &PgPool, path: &Path) -> Result<(), Error> {
     let data: Export = serde_json::from_reader(file)?;
     let base_path = path.parent().unwrap();
 
-    let chat_id = data.id;
     let chat_title = data.name;
     println!(
-        "Chat: '{}' (ID: {}) with {} messages.",
+        "Chat: '{}' with {} messages.",
         chat_title,
-        chat_id,
         data.messages.len()
     );
 

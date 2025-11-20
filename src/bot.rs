@@ -51,7 +51,7 @@ async fn message_handler(bot: Bot, msg: Message, state: BotState) -> ResponseRes
             }
         };
 
-        match database::find_closest_match(
+        return match database::find_closest_match(
             &state.pool,
             chat_id,
             hash,
@@ -70,11 +70,13 @@ async fn message_handler(bot: Bot, msg: Message, state: BotState) -> ResponseRes
                 )
                 .reply_to(MessageId(closest_match.message_id))
                 .await?;
+
+                Ok(())
             }
-            Ok(None) => {}
+            Ok(None) => Ok(()),
             Err(e) => {
                 error!("Database error: {e}");
-                return Ok(());
+                Ok(())
             }
         };
     }
@@ -107,11 +109,13 @@ async fn message_handler(bot: Bot, msg: Message, state: BotState) -> ResponseRes
             bot.send_message(
                 msg.chat.id,
                 format!(
-                    "duplicate image (dst {distance}).",
-                    distance = closest_match.distance
+                    "duplicate image (dst {distance}).\nhttps://t.me/c/{user_chat_id}/{original_msg}",
+                    distance = closest_match.distance,
+                    user_chat_id = convert_telegram_chat_id(chat_id), // gotta convert chat id to user facing so users can click the link
+                    original_msg = closest_match.message_id,
                 ),
             )
-            .reply_to(MessageId(closest_match.message_id))
+            .reply_to(msg.id)
             .await?;
         }
         None => {
@@ -193,4 +197,37 @@ fn calculate_hash(image: &[u8]) -> Result<i64, image::ImageError> {
     let hash = i64::from_be_bytes(hash);
 
     Ok(hash)
+}
+
+/// Converts a Telegram bot chat ID to its user-facing, positive equivalent
+fn convert_telegram_chat_id(chat_id: i64) -> i64 {
+    // 1. Quick check: If it's positive or greater than -100 (e.g., -99, 0, 5),
+    // it mathematically cannot start with "-100".
+    if chat_id > -100 {
+        return chat_id;
+    }
+
+    // 2. Convert to unsigned to safely handle i64::MIN and standard math.
+    let abs = chat_id.unsigned_abs();
+
+    // 3. Calculate the base-10 logarithm to determine the number of digits.
+    // ilog10() returns (number_of_digits - 1).
+    // Example: 1002 -> log is 3.
+    let log = abs.ilog10();
+
+    // 4. Calculate the power of 10 required to isolate the top 3 digits.
+    // We subtract 2 because we want to check the "100" (which is 3 digits).
+    // Example: 1002 (log 3) -> 10^(3-2) = 10^1 = 10.
+    let divisor = 10u64.pow(log - 2);
+
+    // 5. Check if the top 3 digits are 100.
+    // Example: 1002 / 10 = 100.
+    if abs / divisor == 100 {
+        // 6. Return the remainder, cast back to i64.
+        // Example: 1002 % 10 = 2.
+        return (abs % divisor) as i64;
+    }
+
+    // 7. If it didn't start with 100, return the original number.
+    chat_id
 }

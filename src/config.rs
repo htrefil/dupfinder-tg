@@ -25,6 +25,9 @@ pub enum Commands {
         /// Path to the chat export's result.json file
         #[arg(required = true)]
         path: PathBuf,
+        /// the BOT-FACING chat id (might be different from the one in the file)
+        #[arg(required = true, allow_negative_numbers = true)]
+        chat_id: i64,
     },
 }
 

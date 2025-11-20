@@ -624,6 +624,7 @@ dependencies = [
  "anyhow",
  "clap",
  "config",
+ "dotenvy",
  "image",
  "img_hash",
  "indicatif",

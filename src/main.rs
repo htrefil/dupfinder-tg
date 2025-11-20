@@ -9,6 +9,8 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenvy::dotenv().ok();
+
     let cli = config::Cli::parse();
     let settings = config::Settings::new(&cli)?;
 
@@ -29,9 +31,9 @@ async fn main() -> Result<()> {
             info!("Starting bot...");
             bot::run(settings, pool).await?;
         }
-        config::Commands::Import { path } => {
+        config::Commands::Import { path, chat_id } => {
             info!("Running importer...");
-            importer::run(&pool, &path).await?;
+            importer::run(&pool, &path, chat_id).await?;
         }
     }
 
