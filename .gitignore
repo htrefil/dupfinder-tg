@@ -1,3 +1,4 @@
 /target
 /postgres_data
 /.env
+*.local

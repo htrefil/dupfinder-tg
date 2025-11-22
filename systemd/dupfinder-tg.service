@@ -1,0 +1,11 @@
+[Unit]
+Description=dupfinder-tg
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/dupfinder-tg run -c /etc/dupfinder-tg.toml
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

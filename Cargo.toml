@@ -2,12 +2,21 @@
 name = "dupfinder-tg"
 version = "0.1.0"
 edition = "2024"
+license = "Proprietary"
+authors = ["Ponas Kovas"]
+description = "dupfinder-tg"
+
+[package.metadata.deb]
+maintainer-scripts = "systemd/"
+systemd-units = { enable = true }
+assets = [
+    { source = "example/config.toml", dest = "etc/dupfinder-tg.toml", mode = "644" },
+    { source = "target/release/dupfinder-tg", dest = "usr/bin/dupfinder-tg", mode = "755" }
+]
 
 [dependencies]
 anyhow = "1.0.100"
 clap = { version = "4.5.52", features = ["derive", "env"] }
-config = "0.15.19"
-dotenvy = "0.15.7"
 image = { version = "0.23" }
 img_hash = "3.2.0"
 indicatif = { version = "0.18.3", features = ["tokio"] }
@@ -18,5 +27,7 @@ sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "mac
 teloxide = { version = "0.17.0", default-features = false, features = ["macros", "rustls", "ctrlc_handler"] }
 thiserror = "2.0.17"
 tokio = { version = "1.48", features = ["full"] }
+toml = "0.9.8"
 tracing = "0.1.41"
+tracing-log = "0.2.0"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }

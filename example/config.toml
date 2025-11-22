@@ -1,5 +1,4 @@
-log_level = "debug"
-similarity_threshold = 10
+similarity-threshold = 10
 
 # you can use .env file to set these env vars instead of here
 
@@ -8,5 +7,4 @@ similarity_threshold = 10
 token = "your token"
 
 [database]
-# or use DUPFINDER_database_URL env var (automatically set by the nix flake)
 url = "postgres://user:password@localhost:5432/dbname"

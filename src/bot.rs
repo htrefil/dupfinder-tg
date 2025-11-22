@@ -1,18 +1,21 @@
-use crate::{config::Settings, database};
+use crate::config::Config;
+use crate::database;
 use anyhow::Result;
 use img_hash::HasherConfig;
 use sqlx::PgPool;
 use std::io::Cursor;
-use teloxide::{net::Download, prelude::*, sugar::request::RequestReplyExt};
-use tracing::{debug, error};
+use teloxide::net::Download;
+use teloxide::prelude::*;
+use teloxide::sugar::request::RequestReplyExt;
+use tracing::{debug, error, info};
 
 #[derive(Clone)]
 struct BotState {
-    settings: Settings,
+    settings: Config,
     pool: PgPool,
 }
 
-pub async fn run(settings: Settings, pool: PgPool) -> Result<()> {
+pub async fn run(settings: Config, pool: PgPool) -> Result<()> {
     let bot = Bot::new(settings.telegram.token.clone());
 
     let state = BotState { pool, settings };
@@ -20,7 +23,7 @@ pub async fn run(settings: Settings, pool: PgPool) -> Result<()> {
     // Define the command handler (or message handler)
     let handler = Update::filter_message().endpoint(message_handler);
 
-    println!("Bot started...");
+    info!("Bot started...");
 
     Dispatcher::builder(bot, handler)
         .dependencies(dptree::deps![state])
